@@ -26,7 +26,7 @@ include-files = [
     sha256 = "9a58494e8da722c3aef248c9227b0e9c528c7318309827780f16220998180a0d"
     source = "https://dl.google.com/go/go1.15.5.src.tar.gz"
     source_sha256 = "c1076b90cf94b73ebed62a81d802cd84d43d02dea8c07abdc922c57a071c84f1"
-    stacks = ["io.buildpacks.stacks.bionic", "io.buildpacks.samples.stacks.bionic"]
+    stacks = ["io.buildpacks.stacks.bionic", "io.buildpacks.samples.stacks.bionic", "io.paketo.stacks.tiny"]
     uri = "https://golang.org/dl/go1.15.5.linux-amd64.tar.gz"
     version = "1.15.5"
 
@@ -47,6 +47,9 @@ id = "io.buildpacks.stacks.bionic"
 
 [[stacks]]
 id = "io.buildpacks.samples.stacks.bionic"
+
+[[stacks]]
+id = "io.paketo.stacks.tiny"
 
 # windows
 [[stacks]]
