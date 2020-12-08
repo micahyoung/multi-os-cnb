@@ -7,9 +7,9 @@ OS=$(docker info --format '{{.OSType}}')
 pack package-buildpack multi-os-cnb-${OS} --config package-${OS}.yml
 
 if [[ "$OS" == "windows" ]]; then
-STACK_ID=io.buildpacks.samples.stacks.nanoserver-1809
-BUILD_IMAGE=cnbs/sample-stack-build:nanoserver-1809
-RUN_IMAGE=cnbs/sample-stack-run:nanoserver-1809
+STACK_ID=io.buildpacks.samples.stacks.dotnet-framework-1809
+BUILD_IMAGE=cnbs/sample-stack-build:dotnet-framework-1809
+RUN_IMAGE=cnbs/sample-stack-run:dotnet-framework-1809
 else
 STACK_ID=io.buildpacks.samples.stacks.bionic
 BUILD_IMAGE=cnbs/sample-stack-build:bionic

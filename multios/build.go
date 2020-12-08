@@ -28,7 +28,10 @@ func Build(logger scribe.Logger, service DependencyService, clock chronos.Clock)
 		// get targets from BP_GO_TARGETS
 		var targets []string
 		if val, ok := os.LookupEnv("BP_GO_TARGETS"); ok {
-			targets = filepath.SplitList(val)
+			for _, target := range filepath.SplitList(val) {
+				//remove any trailing slash from target
+				targets = append(targets, strings.TrimRight(target, string(filepath.Separator)))
+			}
 		}
 
 		// if no BP_GO_TARGETS, default search in cmd/main + cmd/**/main.go
@@ -83,19 +86,20 @@ func Build(logger scribe.Logger, service DependencyService, clock chronos.Clock)
 		}
 
 
-		// use custom tmp/cache path since TMP is not set on Windows (for some TBD reason)
+		// setup GOCACHE layer
 		goTmpLayer, err := context.Layers.Get("go-tmp", packit.BuildLayer)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		goTmpPath := filepath.Join(goTmpLayer.Path, "gotmp")
-		if err := os.MkdirAll(goTmpPath, 0777); err != nil {
+		goCachePath := filepath.Join(goTmpLayer.Path, "gocache")
+		if err := os.MkdirAll(goCachePath, 0777); err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		goCachePath := filepath.Join(goTmpLayer.Path, "gocache")
-		if err := os.MkdirAll(goCachePath, 0777); err != nil {
+		// use custom GOTMPDIR since TMP is not always set on Windows
+		goTmpPath := filepath.Join(goTmpLayer.Path, "gotmp")
+		if err := os.MkdirAll(goTmpPath, 0777); err != nil {
 			return packit.BuildResult{}, err
 		}
 
@@ -139,7 +143,7 @@ func Build(logger scribe.Logger, service DependencyService, clock chronos.Clock)
 		launchTarget := targets[0]
 		_, launchPathBinName := filepath.Split(launchTarget)
 
-		logger.Action("%s: %s", launchType, filepath.Join(launchBinPath, launchTarget))
+		logger.Action("%s: %s", launchType, filepath.Join(launchBinPath, launchPathBinName))
 
 		return packit.BuildResult{
 			Plan: context.Plan,
