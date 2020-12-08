@@ -45,11 +45,13 @@ func Build(logger scribe.Logger, service DependencyService, clock chronos.Clock)
 			return packit.BuildResult{}, errors.New("no main.go files could be found")
 		}
 
-		goCacheLayer, err := context.Layers.Get("go", packit.BuildLayer, packit.CacheLayer)
+		// create/reuse existing go layer
+		goCacheLayer, err := context.Layers.Get("go", packit.CacheLayer)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
+		// get go version from buildpack toml
 		logger.Subprocess("Resolving Go version")
 		dep, err := service.Resolve(filepath.Join(context.CNBPath, "buildpack.toml"), "go", "", context.Stack)
 		if err != nil {
@@ -57,9 +59,10 @@ func Build(logger scribe.Logger, service DependencyService, clock chronos.Clock)
 		}
 		logger.Action("Selected Go version: %s", dep.Version)
 
+		// download go if not already present on cache layer
 		goCompilerPath := filepath.Join(goCacheLayer.Path, "go", "bin")
 		if _, err := os.Stat(goCompilerPath); err != nil && os.IsNotExist(err) {
-			logger.Action("Downloading GO")
+			logger.Action("Downloading GO to cache layer %s", goCacheLayer.Path)
 			err = service.Install(dep, context.CNBPath, goCacheLayer.Path)
 			if err != nil {
 				return packit.BuildResult{}, err
@@ -68,19 +71,31 @@ func Build(logger scribe.Logger, service DependencyService, clock chronos.Clock)
 			logger.Subprocess("Reusing cached layer %s", filepath.Dir(goCompilerPath))
 		}
 
+		// setup launch layer for built compiled source binaries
 		targetsLayer, err := context.Layers.Get("go-targets", packit.LaunchLayer)
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		// use custom tmp/cache path since TMP is not set on Windows (for some TBD reason)
-		goTmp := filepath.Join(goCacheLayer.Path, "tmp")
-		if err := os.MkdirAll(goTmp, 0777); err != nil {
+		launchBinPath := filepath.Join(targetsLayer.Path, "bin")
+		if err := os.MkdirAll(launchBinPath, 0777); err != nil {
 			return packit.BuildResult{}, err
 		}
 
-		launchBinPath := filepath.Join(targetsLayer.Path, "bin")
-		if err := os.MkdirAll(launchBinPath, 0777); err != nil {
+
+		// use custom tmp/cache path since TMP is not set on Windows (for some TBD reason)
+		goTmpLayer, err := context.Layers.Get("go-tmp", packit.BuildLayer)
+		if err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		goTmpPath := filepath.Join(goTmpLayer.Path, "gotmp")
+		if err := os.MkdirAll(goTmpPath, 0777); err != nil {
+			return packit.BuildResult{}, err
+		}
+
+		goCachePath := filepath.Join(goTmpLayer.Path, "gocache")
+		if err := os.MkdirAll(goCachePath, 0777); err != nil {
 			return packit.BuildResult{}, err
 		}
 
@@ -97,8 +112,8 @@ func Build(logger scribe.Logger, service DependencyService, clock chronos.Clock)
 						Env: []string{
 							"PATH=" + goCompilerPath,
 							"GOPATH=" + filepath.Join(goCacheLayer.Path, "go"),
-							"GOCACHE=" + goTmp,
-							"GOTMPDIR=" + goTmp,
+							"GOCACHE=" + goCachePath,
+							"GOTMPDIR=" + goTmpPath,
 						},
 						Stdout: os.Stdout,
 						Stderr: os.Stderr,
