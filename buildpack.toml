@@ -26,7 +26,7 @@ include-files = [
     sha256 = "9a58494e8da722c3aef248c9227b0e9c528c7318309827780f16220998180a0d"
     source = "https://dl.google.com/go/go1.15.5.src.tar.gz"
     source_sha256 = "c1076b90cf94b73ebed62a81d802cd84d43d02dea8c07abdc922c57a071c84f1"
-    stacks = ["io.buildpacks.stacks.bionic", "io.buildpacks.samples.stacks.bionic", "io.paketo.stacks.tiny"]
+    stacks = ["io.buildpacks.stacks.bionic", "io.paketo.stacks.tiny", "io.buildpacks.samples.stacks.bionic"]
     uri = "https://golang.org/dl/go1.15.5.linux-amd64.tar.gz"
     version = "1.15.5"
 
@@ -37,7 +37,7 @@ include-files = [
     sha256 = "1d24be3a200201a74be25e4134fbec467750e834e84e9c7789a9fc13248c5507"
     source = "https://dl.google.com/go/go1.15.5.src.tar.gz"
     source_sha256 = "c1076b90cf94b73ebed62a81d802cd84d43d02dea8c07abdc922c57a071c84f1"
-    stacks = ["io.buildpacks.samples.stacks.nanoserver-1809", "io.buildpacks.stacks.nanoserver", "io.buildpacks.stacks.servercore"]
+    stacks = ["io.buildpacks.stacks.nanoserver", "io.buildpacks.stacks.servercore", "io.buildpacks.samples.stacks.nanoserver-1809"]
     uri = "https://golang.org/dl/go1.15.5.windows-amd64.zip"
     version = "1.15.5"
 
